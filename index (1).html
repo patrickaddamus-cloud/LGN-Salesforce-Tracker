@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en"> 
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
     <title>LGN Second-Stage Program Tracker</title>
     <style>
         * {
@@ -468,18 +469,18 @@
             </div>
 
             <div class="controls">
-                <button class="btn btn-primary" onclick="openModal()">+ Add Company</button>
-                <button class="btn btn-secondary" onclick="exportToCSV()">Export to CSV</button>
-                <button class="btn btn-secondary" onclick="exportForSalesforce()">Export for Salesforce</button>
-                <button class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
+                <button class="btn btn-primary" id="addCompanyBtn">+ Add Company</button>
+                <button class="btn btn-secondary" id="exportCSVBtn">Export to CSV</button>
+                <button class="btn btn-secondary" id="exportSalesforceBtn">Export for Salesforce</button>
+                <button class="btn btn-danger" id="clearDataBtn">Clear All Data</button>
             </div>
 
             <div class="search-filter">
-                <input type="text" id="searchInput" placeholder="Search companies..." onkeyup="filterTable()">
-                <select id="programFilter" onchange="filterTable()">
+                <input type="text" id="searchInput" placeholder="Search companies...">
+                <select id="programFilter">
                     <option value="">All Programs</option>
                 </select>
-                <select id="statusFilter" onchange="filterTable()">
+                <select id="statusFilter">
                     <option value="">All Statuses</option>
                 </select>
             </div>
@@ -498,30 +499,20 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <tr>
-                            <td colspan="7" class="empty-state">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                                <h3>No companies yet</h3>
-                                <p>Click "Add Company" to get started</p>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Company Modal -->
     <div id="companyModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Add Company</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="companyForm" onsubmit="saveCompany(event)">
+                <form id="companyForm">
                     <input type="hidden" id="companyId">
                     
                     <div class="form-group">
@@ -603,19 +594,18 @@
 
                     <div class="controls">
                         <button type="submit" class="btn btn-primary">Save Company</button>
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Admin Modal -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
                 <h2>Admin Dashboard</h2>
-                <button class="close-btn" onclick="closeAdminModal()">&times;</button>
+                <button class="close-btn" id="closeAdminBtn">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="admin-section">
@@ -623,7 +613,7 @@
                     <div class="tag-list" id="programTypesList"></div>
                     <div class="add-item-form">
                         <input type="text" id="newProgramType" placeholder="Add new program type...">
-                        <button onclick="addProgramType()">Add</button>
+                        <button type="button" id="addProgramBtn">Add</button>
                     </div>
                 </div>
 
@@ -632,7 +622,7 @@
                     <div class="tag-list" id="statusOptionsList"></div>
                     <div class="add-item-form">
                         <input type="text" id="newStatusOption" placeholder="Add new status...">
-                        <button onclick="addStatusOption()">Add</button>
+                        <button type="button" id="addStatusBtn">Add</button>
                     </div>
                 </div>
 
@@ -656,412 +646,497 @@
                     </div>
                     <div class="setting-row">
                         <span class="setting-label">Export Data Backup</span>
-                        <button class="btn btn-secondary btn-small" onclick="exportBackup()">Download Backup</button>
+                        <button class="btn btn-secondary btn-small" id="exportBackupBtn">Download Backup</button>
                     </div>
                     <div class="setting-row">
                         <span class="setting-label">Import Data Backup</span>
-                        <input type="file" id="importBackup" accept=".json" onchange="importBackup(event)" style="font-size: 14px;">
+                        <input type="file" id="importBackup" accept=".json" style="font-size: 14px;">
                     </div>
                 </div>
 
                 <div class="controls">
-                    <button class="btn btn-primary" onclick="saveAdminSettings()">Save Settings</button>
-                    <button class="btn btn-secondary" onclick="resetToDefaults()">Reset to Defaults</button>
+                    <button class="btn btn-primary" id="saveAdminBtn">Save Settings</button>
+                    <button class="btn btn-secondary" id="resetDefaultsBtn">Reset to Defaults</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Admin Button -->
-    <button class="admin-btn" onclick="openAdminModal()" title="Admin Dashboard">⚙️</button>
+    <button class="admin-btn" id="openAdminBtn" title="Admin Dashboard">⚙️</button>
 
     <script>
-        // Admin Settings with Defaults
-        let adminSettings = JSON.parse(localStorage.getItem('lgnAdminSettings')) || {
-            programTypes: ['SIG', 'CEO Roundtable', 'Other'],
-            statusOptions: ['Pending', 'Active', 'Completed'],
-            orgName: 'Louisiana Growth Network',
-            subtitle: 'Second-Stage Program Tracker'
-        };
-
-        let companies = JSON.parse(localStorage.getItem('lgnCompanies')) || [];
-
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const programFilter = document.getElementById('programFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-
-            let filteredCompanies = companies.filter(company => {
-                const matchesSearch = company.companyName.toLowerCase().includes(searchTerm) ||
-                                    (company.contactPerson && company.contactPerson.toLowerCase().includes(searchTerm));
-                const matchesProgram = !programFilter || company.program === programFilter;
-                const matchesStatus = !statusFilter || company.status === statusFilter;
-                return matchesSearch && matchesProgram && matchesStatus;
-            });
-
-            if (filteredCompanies.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="empty-state">
-                            <h3>No companies found</h3>
-                            <p>Try adjusting your filters or add a new company</p>
-                        </td>
-                    </tr>
-                `;
-            } else {
-                tbody.innerHTML = filteredCompanies.map(company => `
-                    <tr>
-                        <td><strong>${company.companyName}</strong></td>
-                        <td>${company.program}</td>
-                        <td><span class="status-badge status-${company.status.toLowerCase()}">${company.status}</span></td>
-                        <td>${company.startDate || 'N/A'}</td>
-                        <td>${company.contactPerson || 'N/A'}</td>
-                        <td>${company.city ? company.city + (company.parish ? ', ' + company.parish : '') : 'N/A'}</td>
-                        <td class="actions">
-                            <button class="btn btn-primary btn-small" onclick="editCompany('${company.id}')">Edit</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteCompany('${company.id}')">Delete</button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-
-            updateStats();
-        }
-
-        function updateStats() {
-            document.getElementById('totalCompanies').textContent = companies.length;
-            document.getElementById('activePrograms').textContent = companies.filter(c => c.status === 'Active').length;
-            document.getElementById('completedPrograms').textContent = companies.filter(c => c.status === 'Completed').length;
-        }
-
-        function openModal(companyId = null) {
-            const modal = document.getElementById('companyModal');
-            const form = document.getElementById('companyForm');
-            
-            if (companyId) {
-                const company = companies.find(c => c.id === companyId);
-                document.getElementById('modalTitle').textContent = 'Edit Company';
-                document.getElementById('companyId').value = company.id;
-                document.getElementById('companyName').value = company.companyName;
-                document.getElementById('program').value = company.program;
-                document.getElementById('status').value = company.status;
-                document.getElementById('startDate').value = company.startDate || '';
-                document.getElementById('endDate').value = company.endDate || '';
-                document.getElementById('contactPerson').value = company.contactPerson || '';
-                document.getElementById('contactEmail').value = company.contactEmail || '';
-                document.getElementById('contactPhone').value = company.contactPhone || '';
-                document.getElementById('city').value = company.city || '';
-                document.getElementById('parish').value = company.parish || '';
-                document.getElementById('industry').value = company.industry || '';
-                document.getElementById('employeeCount').value = company.employeeCount || '';
-                document.getElementById('notes').value = company.notes || '';
-            } else {
-                document.getElementById('modalTitle').textContent = 'Add Company';
-                form.reset();
-                document.getElementById('companyId').value = '';
-            }
-            
-            modal.classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('companyModal').classList.remove('active');
-        }
-
-        function saveCompany(event) {
-            event.preventDefault();
-            
-            const companyId = document.getElementById('companyId').value;
-            const companyData = {
-                id: companyId || Date.now().toString(),
-                companyName: document.getElementById('companyName').value,
-                program: document.getElementById('program').value,
-                status: document.getElementById('status').value,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                contactPerson: document.getElementById('contactPerson').value,
-                contactEmail: document.getElementById('contactEmail').value,
-                contactPhone: document.getElementById('contactPhone').value,
-                city: document.getElementById('city').value,
-                parish: document.getElementById('parish').value,
-                industry: document.getElementById('industry').value,
-                employeeCount: document.getElementById('employeeCount').value,
-                notes: document.getElementById('notes').value,
-                createdAt: companyId ? companies.find(c => c.id === companyId).createdAt : new Date().toISOString(),
-                updatedAt: new Date().toISOString()
+        (function() {
+            var adminSettings = JSON.parse(localStorage.getItem('lgnAdminSettings')) || {
+                programTypes: ['SIG', 'CEO Roundtable', 'Other'],
+                statusOptions: ['Pending', 'Active', 'Completed'],
+                orgName: 'Louisiana Growth Network',
+                subtitle: 'Second-Stage Program Tracker'
             };
 
-            if (companyId) {
-                const index = companies.findIndex(c => c.id === companyId);
-                companies[index] = companyData;
-            } else {
-                companies.push(companyData);
+            var companies = JSON.parse(localStorage.getItem('lgnCompanies')) || [];
+            var currentEditId = null;
+
+            function createElement(tag, className, text) {
+                var el = document.createElement(tag);
+                if (className) el.className = className;
+                if (text) el.textContent = text;
+                return el;
             }
 
-            localStorage.setItem('lgnCompanies', JSON.stringify(companies));
-            closeModal();
-            renderTable();
-        }
+            function renderTable() {
+                var tbody = document.getElementById('tableBody');
+                var searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                var programFilter = document.getElementById('programFilter').value;
+                var statusFilter = document.getElementById('statusFilter').value;
 
-        function editCompany(id) {
-            openModal(id);
-        }
+                var filteredCompanies = companies.filter(function(company) {
+                    var matchesSearch = company.companyName.toLowerCase().indexOf(searchTerm) !== -1 ||
+                                        (company.contactPerson && company.contactPerson.toLowerCase().indexOf(searchTerm) !== -1);
+                    var matchesProgram = !programFilter || company.program === programFilter;
+                    var matchesStatus = !statusFilter || company.status === statusFilter;
+                    return matchesSearch && matchesProgram && matchesStatus;
+                });
 
-        function deleteCompany(id) {
-            if (confirm('Are you sure you want to delete this company?')) {
-                companies = companies.filter(c => c.id !== id);
+                tbody.innerHTML = '';
+
+                if (filteredCompanies.length === 0) {
+                    var tr = createElement('tr');
+                    var td = createElement('td');
+                    td.setAttribute('colspan', '7');
+                    td.className = 'empty-state';
+                    td.innerHTML = '<h3>No companies found</h3><p>Try adjusting your filters or add a new company</p>';
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                } else {
+                    filteredCompanies.forEach(function(company) {
+                        var tr = createElement('tr');
+                        
+                        var td1 = createElement('td');
+                        td1.innerHTML = '<strong>' + company.companyName + '</strong>';
+                        tr.appendChild(td1);
+
+                        var td2 = createElement('td', null, company.program);
+                        tr.appendChild(td2);
+
+                        var td3 = createElement('td');
+                        var badge = createElement('span', 'status-badge status-' + company.status.toLowerCase(), company.status);
+                        td3.appendChild(badge);
+                        tr.appendChild(td3);
+
+                        var td4 = createElement('td', null, company.startDate || 'N/A');
+                        tr.appendChild(td4);
+
+                        var td5 = createElement('td', null, company.contactPerson || 'N/A');
+                        tr.appendChild(td5);
+
+                        var location = company.city ? company.city + (company.parish ? ', ' + company.parish : '') : 'N/A';
+                        var td6 = createElement('td', null, location);
+                        tr.appendChild(td6);
+
+                        var td7 = createElement('td');
+                        td7.className = 'actions';
+                        var editBtn = createElement('button', 'btn btn-primary btn-small', 'Edit');
+                        editBtn.setAttribute('data-id', company.id);
+                        editBtn.addEventListener('click', function() {
+                            openModal(this.getAttribute('data-id'));
+                        });
+                        var deleteBtn = createElement('button', 'btn btn-danger btn-small', 'Delete');
+                        deleteBtn.setAttribute('data-id', company.id);
+                        deleteBtn.addEventListener('click', function() {
+                            deleteCompany(this.getAttribute('data-id'));
+                        });
+                        td7.appendChild(editBtn);
+                        td7.appendChild(deleteBtn);
+                        tr.appendChild(td7);
+
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                updateStats();
+            }
+
+            function updateStats() {
+                document.getElementById('totalCompanies').textContent = companies.length;
+                document.getElementById('activePrograms').textContent = companies.filter(function(c) { 
+                    return c.status === 'Active'; 
+                }).length;
+                document.getElementById('completedPrograms').textContent = companies.filter(function(c) { 
+                    return c.status === 'Completed'; 
+                }).length;
+            }
+
+            function openModal(companyId) {
+                var modal = document.getElementById('companyModal');
+                var form = document.getElementById('companyForm');
+                
+                if (companyId) {
+                    var company = companies.find(function(c) { return c.id === companyId; });
+                    if (company) {
+                        document.getElementById('modalTitle').textContent = 'Edit Company';
+                        document.getElementById('companyId').value = company.id;
+                        document.getElementById('companyName').value = company.companyName;
+                        document.getElementById('program').value = company.program;
+                        document.getElementById('status').value = company.status;
+                        document.getElementById('startDate').value = company.startDate || '';
+                        document.getElementById('endDate').value = company.endDate || '';
+                        document.getElementById('contactPerson').value = company.contactPerson || '';
+                        document.getElementById('contactEmail').value = company.contactEmail || '';
+                        document.getElementById('contactPhone').value = company.contactPhone || '';
+                        document.getElementById('city').value = company.city || '';
+                        document.getElementById('parish').value = company.parish || '';
+                        document.getElementById('industry').value = company.industry || '';
+                        document.getElementById('employeeCount').value = company.employeeCount || '';
+                        document.getElementById('notes').value = company.notes || '';
+                    }
+                } else {
+                    document.getElementById('modalTitle').textContent = 'Add Company';
+                    form.reset();
+                    document.getElementById('companyId').value = '';
+                }
+                
+                modal.classList.add('active');
+            }
+
+            function closeModal() {
+                document.getElementById('companyModal').classList.remove('active');
+            }
+
+            function saveCompany(event) {
+                event.preventDefault();
+                
+                var companyId = document.getElementById('companyId').value;
+                var companyData = {
+                    id: companyId || Date.now().toString(),
+                    companyName: document.getElementById('companyName').value,
+                    program: document.getElementById('program').value,
+                    status: document.getElementById('status').value,
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value,
+                    contactPerson: document.getElementById('contactPerson').value,
+                    contactEmail: document.getElementById('contactEmail').value,
+                    contactPhone: document.getElementById('contactPhone').value,
+                    city: document.getElementById('city').value,
+                    parish: document.getElementById('parish').value,
+                    industry: document.getElementById('industry').value,
+                    employeeCount: document.getElementById('employeeCount').value,
+                    notes: document.getElementById('notes').value,
+                    createdAt: companyId ? companies.find(function(c) { return c.id === companyId; }).createdAt : new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                if (companyId) {
+                    var index = companies.findIndex(function(c) { return c.id === companyId; });
+                    companies[index] = companyData;
+                } else {
+                    companies.push(companyData);
+                }
+
                 localStorage.setItem('lgnCompanies', JSON.stringify(companies));
+                closeModal();
                 renderTable();
             }
-        }
 
-        function filterTable() {
-            renderTable();
-        }
-
-        function exportToCSV() {
-            if (companies.length === 0) {
-                alert('No data to export');
-                return;
-            }
-
-            const headers = ['Company Name', 'Program', 'Status', 'Start Date', 'End Date', 'Contact Person', 
-                           'Email', 'Phone', 'City', 'Parish', 'Industry', 'Employee Count', 'Notes', 'Created', 'Updated'];
-            
-            const csvContent = [
-                headers.join(','),
-                ...companies.map(c => [
-                    `"${c.companyName}"`,
-                    `"${c.program}"`,
-                    `"${c.status}"`,
-                    c.startDate || '',
-                    c.endDate || '',
-                    `"${c.contactPerson || ''}"`,
-                    c.contactEmail || '',
-                    c.contactPhone || '',
-                    `"${c.city || ''}"`,
-                    `"${c.parish || ''}"`,
-                    `"${c.industry || ''}"`,
-                    c.employeeCount || '',
-                    `"${(c.notes || '').replace(/"/g, '""')}"`,
-                    c.createdAt || '',
-                    c.updatedAt || ''
-                ].join(','))
-            ].join('\n');
-
-            downloadFile(csvContent, 'lgn-companies.csv', 'text/csv');
-        }
-
-        function exportForSalesforce() {
-            if (companies.length === 0) {
-                alert('No data to export');
-                return;
-            }
-
-            const headers = ['Account Name', 'Phone', 'Email', 'City', 'Parish', 'Industry', 
-                           'Employees', 'Program Type', 'Status', 'Start Date', 'End Date', 'Description'];
-            
-            const csvContent = [
-                headers.join(','),
-                ...companies.map(c => [
-                    `"${c.companyName}"`,
-                    c.contactPhone || '',
-                    c.contactEmail || '',
-                    `"${c.city || ''}"`,
-                    `"${c.parish || ''}"`,
-                    `"${c.industry || ''}"`,
-                    c.employeeCount || '',
-                    `"${c.program}"`,
-                    `"${c.status}"`,
-                    c.startDate || '',
-                    c.endDate || '',
-                    `"${(c.notes || '').replace(/"/g, '""')} - Contact: ${c.contactPerson || 'N/A'}"`
-                ].join(','))
-            ].join('\n');
-
-            downloadFile(csvContent, 'lgn-salesforce-import.csv', 'text/csv');
-        }
-
-        function downloadFile(content, filename, type) {
-            const blob = new Blob([content], { type });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }
-
-        function clearAllData() {
-            if (confirm('Are you sure you want to delete ALL company data? This cannot be undone.')) {
-                if (confirm('This will permanently delete ' + companies.length + ' companies. Are you absolutely sure?')) {
-                    companies = [];
-                    localStorage.removeItem('lgnCompanies');
+            function deleteCompany(id) {
+                if (confirm('Are you sure you want to delete this company?')) {
+                    companies = companies.filter(function(c) { return c.id !== id; });
+                    localStorage.setItem('lgnCompanies', JSON.stringify(companies));
                     renderTable();
                 }
             }
-        }
 
-        // Admin Functions
-        function openAdminModal() {
-            document.getElementById('adminModal').classList.add('active');
-            renderAdminSettings();
-        }
-
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.remove('active');
-        }
-
-        function renderAdminSettings() {
-            document.getElementById('headerTitle').textContent = adminSettings.orgName;
-            document.getElementById('headerSubtitle').textContent = adminSettings.subtitle;
-            
-            document.getElementById('orgName').value = adminSettings.orgName;
-            document.getElementById('subtitle').value = adminSettings.subtitle;
-            
-            const programList = document.getElementById('programTypesList');
-            programList.innerHTML = adminSettings.programTypes.map((type, index) => `
-                <div class="tag">
-                    ${type}
-                    <button onclick="removeProgramType(${index})">×</button>
-                </div>
-            `).join('');
-            
-            const statusList = document.getElementById('statusOptionsList');
-            statusList.innerHTML = adminSettings.statusOptions.map((status, index) => `
-                <div class="tag">
-                    ${status}
-                    <button onclick="removeStatusOption(${index})">×</button>
-                </div>
-            `).join('');
-            
-            document.getElementById('adminTotalCompanies').textContent = companies.length;
-            
-            updateFormDropdowns();
-        }
-
-        function updateFormDropdowns() {
-            const programSelect = document.getElementById('program');
-            const programFilter = document.getElementById('programFilter');
-            const statusSelect = document.getElementById('status');
-            const statusFilter = document.getElementById('statusFilter');
-            
-            programSelect.innerHTML = '<option value="">Select Program</option>' + 
-                adminSettings.programTypes.map(type => `<option value="${type}">${type}</option>`).join('');
-            
-            programFilter.innerHTML = '<option value="">All Programs</option>' + 
-                adminSettings.programTypes.map(type => `<option value="${type}">${type}</option>`).join('');
-            
-            statusSelect.innerHTML = adminSettings.statusOptions.map(status => 
-                `<option value="${status}">${status}</option>`).join('');
-            
-            statusFilter.innerHTML = '<option value="">All Statuses</option>' + 
-                adminSettings.statusOptions.map(status => `<option value="${status}">${status}</option>`).join('');
-        }
-
-        function addProgramType() {
-            const input = document.getElementById('newProgramType');
-            const value = input.value.trim();
-            if (value && !adminSettings.programTypes.includes(value)) {
-                adminSettings.programTypes.push(value);
-                input.value = '';
-                renderAdminSettings();
-            }
-        }
-
-        function removeProgramType(index) {
-            if (confirm('Remove this program type?')) {
-                adminSettings.programTypes.splice(index, 1);
-                renderAdminSettings();
-            }
-        }
-
-        function addStatusOption() {
-            const input = document.getElementById('newStatusOption');
-            const value = input.value.trim();
-            if (value && !adminSettings.statusOptions.includes(value)) {
-                adminSettings.statusOptions.push(value);
-                input.value = '';
-                renderAdminSettings();
-            }
-        }
-
-        function removeStatusOption(index) {
-            if (confirm('Remove this status option?')) {
-                adminSettings.statusOptions.splice(index, 1);
-                renderAdminSettings();
-            }
-        }
-
-        function saveAdminSettings() {
-            adminSettings.orgName = document.getElementById('orgName').value;
-            adminSettings.subtitle = document.getElementById('subtitle').value;
-            
-            localStorage.setItem('lgnAdminSettings', JSON.stringify(adminSettings));
-            
-            renderAdminSettings();
-            alert('Settings saved successfully!');
-        }
-
-        function resetToDefaults() {
-            if (confirm('Reset all settings to defaults? This will not delete your company data.')) {
-                adminSettings = {
-                    programTypes: ['SIG', 'CEO Roundtable', 'Other'],
-                    statusOptions: ['Pending', 'Active', 'Completed'],
-                    orgName: 'Louisiana Growth Network',
-                    subtitle: 'Second-Stage Program Tracker'
-                };
-                localStorage.setItem('lgnAdminSettings', JSON.stringify(adminSettings));
-                renderAdminSettings();
-                alert('Settings reset to defaults!');
-            }
-        }
-
-        function exportBackup() {
-            const backup = {
-                companies: companies,
-                adminSettings: adminSettings,
-                exportDate: new Date().toISOString()
-            };
-            
-            const dataStr = JSON.stringify(backup, null, 2);
-            downloadFile(dataStr, `lgn-backup-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
-        }
-
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const backup = JSON.parse(e.target.result);
-                    
-                    if (confirm(`Import backup from ${new Date(backup.exportDate).toLocaleDateString()}? This will overwrite current data.`)) {
-                        companies = backup.companies || [];
-                        adminSettings = backup.adminSettings || adminSettings;
-                        
-                        localStorage.setItem('lgnCompanies', JSON.stringify(companies));
-                        localStorage.setItem('lgnAdminSettings', JSON.stringify(adminSettings));
-                        
-                        renderTable();
-                        renderAdminSettings();
-                        alert('Backup imported successfully!');
-                    }
-                } catch (error) {
-                    alert('Error importing backup: Invalid file format');
+            function exportToCSV() {
+                if (companies.length === 0) {
+                    alert('No data to export');
+                    return;
                 }
-            };
-            reader.readAsText(file);
-        }
 
-        // Initialize
-        updateFormDropdowns();
-        renderAdminSettings();
-        renderTable();
+                var headers = ['Company Name', 'Program', 'Status', 'Start Date', 'End Date', 'Contact Person', 
+                               'Email', 'Phone', 'City', 'Parish', 'Industry', 'Employee Count', 'Notes', 'Created', 'Updated'];
+                
+                var rows = [headers.join(',')];
+                
+                companies.forEach(function(c) {
+                    var row = [
+                        '"' + c.companyName + '"',
+                        '"' + c.program + '"',
+                        '"' + c.status + '"',
+                        c.startDate || '',
+                        c.endDate || '',
+                        '"' + (c.contactPerson || '') + '"',
+                        c.contactEmail || '',
+                        c.contactPhone || '',
+                        '"' + (c.city || '') + '"',
+                        '"' + (c.parish || '') + '"',
+                        '"' + (c.industry || '') + '"',
+                        c.employeeCount || '',
+                        '"' + (c.notes || '').replace(/"/g, '""') + '"',
+                        c.createdAt || '',
+                        c.updatedAt || ''
+                    ];
+                    rows.push(row.join(','));
+                });
+
+                downloadFile(rows.join('\n'), 'lgn-companies.csv', 'text/csv');
+            }
+
+            function exportForSalesforce() {
+                if (companies.length === 0) {
+                    alert('No data to export');
+                    return;
+                }
+
+                var headers = ['Account Name', 'Phone', 'Email', 'City', 'Parish', 'Industry', 
+                               'Employees', 'Program Type', 'Status', 'Start Date', 'End Date', 'Description'];
+                
+                var rows = [headers.join(',')];
+                
+                companies.forEach(function(c) {
+                    var row = [
+                        '"' + c.companyName + '"',
+                        c.contactPhone || '',
+                        c.contactEmail || '',
+                        '"' + (c.city || '') + '"',
+                        '"' + (c.parish || '') + '"',
+                        '"' + (c.industry || '') + '"',
+                        c.employeeCount || '',
+                        '"' + c.program + '"',
+                        '"' + c.status + '"',
+                        c.startDate || '',
+                        c.endDate || '',
+                        '"' + (c.notes || '').replace(/"/g, '""') + ' - Contact: ' + (c.contactPerson || 'N/A') + '"'
+                    ];
+                    rows.push(row.join(','));
+                });
+
+                downloadFile(rows.join('\n'), 'lgn-salesforce-import.csv', 'text/csv');
+            }
+
+            function downloadFile(content, filename, type) {
+                var blob = new Blob([content], { type: type });
+                var url = URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+
+            function clearAllData() {
+                if (confirm('Are you sure you want to delete ALL company data? This cannot be undone.')) {
+                    if (confirm('This will permanently delete ' + companies.length + ' companies. Are you absolutely sure?')) {
+                        companies = [];
+                        localStorage.removeItem('lgnCompanies');
+                        renderTable();
+                    }
+                }
+            }
+
+            function openAdminModal() {
+                document.getElementById('adminModal').classList.add('active');
+                renderAdminSettings();
+            }
+
+            function closeAdminModal() {
+                document.getElementById('adminModal').classList.remove('active');
+            }
+
+            function renderAdminSettings() {
+                document.getElementById('headerTitle').textContent = adminSettings.orgName;
+                document.getElementById('headerSubtitle').textContent = adminSettings.subtitle;
+                
+                document.getElementById('orgName').value = adminSettings.orgName;
+                document.getElementById('subtitle').value = adminSettings.subtitle;
+                
+                var programList = document.getElementById('programTypesList');
+                programList.innerHTML = '';
+                adminSettings.programTypes.forEach(function(type, index) {
+                    var tag = createElement('div', 'tag');
+                    tag.textContent = type;
+                    var btn = createElement('button', null, '×');
+                    btn.setAttribute('data-index', index);
+                    btn.addEventListener('click', function() {
+                        removeProgramType(parseInt(this.getAttribute('data-index')));
+                    });
+                    tag.appendChild(btn);
+                    programList.appendChild(tag);
+                });
+                
+                var statusList = document.getElementById('statusOptionsList');
+                statusList.innerHTML = '';
+                adminSettings.statusOptions.forEach(function(status, index) {
+                    var tag = createElement('div', 'tag');
+                    tag.textContent = status;
+                    var btn = createElement('button', null, '×');
+                    btn.setAttribute('data-index', index);
+                    btn.addEventListener('click', function() {
+                        removeStatusOption(parseInt(this.getAttribute('data-index')));
+                    });
+                    tag.appendChild(btn);
+                    statusList.appendChild(tag);
+                });
+                
+                document.getElementById('adminTotalCompanies').textContent = companies.length;
+                
+                updateFormDropdowns();
+            }
+
+            function updateFormDropdowns() {
+                var programSelect = document.getElementById('program');
+                var programFilter = document.getElementById('programFilter');
+                var statusSelect = document.getElementById('status');
+                var statusFilter = document.getElementById('statusFilter');
+                
+                programSelect.innerHTML = '<option value="">Select Program</option>';
+                adminSettings.programTypes.forEach(function(type) {
+                    var opt = createElement('option', null, type);
+                    opt.value = type;
+                    programSelect.appendChild(opt);
+                });
+                
+                programFilter.innerHTML = '<option value="">All Programs</option>';
+                adminSettings.programTypes.forEach(function(type) {
+                    var opt = createElement('option', null, type);
+                    opt.value = type;
+                    programFilter.appendChild(opt);
+                });
+                
+                statusSelect.innerHTML = '';
+                adminSettings.statusOptions.forEach(function(status) {
+                    var opt = createElement('option', null, status);
+                    opt.value = status;
+                    statusSelect.appendChild(opt);
+                });
+                
+                statusFilter.innerHTML = '<option value="">All Statuses</option>';
+                adminSettings.statusOptions.forEach(function(status) {
+                    var opt = createElement('option', null, status);
+                    opt.value = status;
+                    statusFilter.appendChild(opt);
+                });
+            }
+
+            function addProgramType() {
+                var input = document.getElementById('newProgramType');
+                var value = input.value.trim();
+                if (value && adminSettings.programTypes.indexOf(value) === -1) {
+                    adminSettings.programTypes.push(value);
+                    input.value = '';
+                    renderAdminSettings();
+                }
+            }
+
+            function removeProgramType(index) {
+                if (confirm('Remove this program type?')) {
+                    adminSettings.programTypes.splice(index, 1);
+                    renderAdminSettings();
+                }
+            }
+
+            function addStatusOption() {
+                var input = document.getElementById('newStatusOption');
+                var value = input.value.trim();
+                if (value && adminSettings.statusOptions.indexOf(value) === -1) {
+                    adminSettings.statusOptions.push(value);
+                    input.value = '';
+                    renderAdminSettings();
+                }
+            }
+
+            function removeStatusOption(index) {
+                if (confirm('Remove this status option?')) {
+                    adminSettings.statusOptions.splice(index, 1);
+                    renderAdminSettings();
+                }
+            }
+
+            function saveAdminSettings() {
+                adminSettings.orgName = document.getElementById('orgName').value;
+                adminSettings.subtitle = document.getElementById('subtitle').value;
+                
+                localStorage.setItem('lgnAdminSettings', JSON.stringify(adminSettings));
+                
+                renderAdminSettings();
+                alert('Settings saved successfully!');
+            }
+
+            function resetToDefaults() {
+                if (confirm('Reset all settings to defaults? This will not delete your company data.')) {
+                    adminSettings = {
+                        programTypes: ['SIG', 'CEO Roundtable', 'Other'],
+                        statusOptions: ['Pending', 'Active', 'Completed'],
+                        orgName: 'Louisiana Growth Network',
+                        subtitle: 'Second-Stage Program Tracker'
+                    };
+                    localStorage.setItem('lgnAdminSettings', JSON.stringify(adminSettings));
+                    renderAdminSettings();
+                    alert('Settings reset to defaults!');
+                }
+            }
+
+            function exportBackup() {
+                var backup = {
+                    companies: companies,
+                    adminSettings: adminSettings,
+                    exportDate: new Date().toISOString()
+                };
+                
+                var dataStr = JSON.stringify(backup, null, 2);
+                downloadFile(dataStr, 'lgn-backup-' + new Date().toISOString().split('T')[0] + '.json', 'application/json');
+            }
+
+            function importBackup(event) {
+                var file = event.target.files[0];
+                if (!file) return;
+                
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        var backup = JSON.parse(e.target.result);
+                        
+                        if (confirm('Import backup from ' + new Date(backup.exportDate).toLocaleDateString() + '? This will overwrite current data.')) {
+                            companies = backup.companies || [];
+                            adminSettings = backup.adminSettings || adminSettings;
+                            
+                            localStorage.setItem('lgnCompanies', JSON.stringify(companies));
+                            localStorage.setItem('lgnAdminSettings', JSON.stringify(adminSettings));
+                            
+                            renderTable();
+                            renderAdminSettings();
+                            alert('Backup imported successfully!');
+                        }
+                    } catch (error) {
+                        alert('Error importing backup: Invalid file format');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            document.getElementById('addCompanyBtn').addEventListener('click', function() { openModal(null); });
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+            document.getElementById('companyForm').addEventListener('submit', saveCompany);
+            document.getElementById('exportCSVBtn').addEventListener('click', exportToCSV);
+            document.getElementById('exportSalesforceBtn').addEventListener('click', exportForSalesforce);
+            document.getElementById('clearDataBtn').addEventListener('click', clearAllData);
+            document.getElementById('searchInput').addEventListener('keyup', renderTable);
+            document.getElementById('programFilter').addEventListener('change', renderTable);
+            document.getElementById('statusFilter').addEventListener('change', renderTable);
+            document.getElementById('openAdminBtn').addEventListener('click', openAdminModal);
+            document.getElementById('closeAdminBtn').addEventListener('click', closeAdminModal);
+            document.getElementById('addProgramBtn').addEventListener('click', addProgramType);
+            document.getElementById('addStatusBtn').addEventListener('click', addStatusOption);
+            document.getElementById('saveAdminBtn').addEventListener('click', saveAdminSettings);
+            document.getElementById('resetDefaultsBtn').addEventListener('click', resetToDefaults);
+            document.getElementById('exportBackupBtn').addEventListener('click', exportBackup);
+            document.getElementById('importBackup').addEventListener('change', importBackup);
+
+            updateFormDropdowns();
+            renderAdminSettings();
+            renderTable();
+        })();
     </script>
 </body>
 </html>

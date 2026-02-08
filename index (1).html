@@ -351,20 +351,6 @@
             transform: scale(1.1);
         }
 
-        .admin-panel {
-            background: #f9fafb;
-            border-left: 3px solid #3b82f6;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
-
-        .admin-panel h3 {
-            color: #1f2937;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
         .admin-section {
             background: white;
             padding: 20px;
@@ -456,21 +442,13 @@
         .add-item-form button:hover {
             background: #2563eb;
         }
-
-        .color-input {
-            width: 60px;
-            height: 36px;
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Louisiana Growth Network</h1>
-            <p>Second-Stage Program Tracker</p>
+            <h1 id="headerTitle">Louisiana Growth Network</h1>
+            <p id="headerSubtitle">Second-Stage Program Tracker</p>
         </div>
 
         <div class="main-content">
@@ -500,15 +478,9 @@
                 <input type="text" id="searchInput" placeholder="Search companies..." onkeyup="filterTable()">
                 <select id="programFilter" onchange="filterTable()">
                     <option value="">All Programs</option>
-                    <option value="SIG">SIG Program</option>
-                    <option value="CEO Roundtable">CEO Roundtable</option>
-                    <option value="Other">Other</option>
                 </select>
                 <select id="statusFilter" onchange="filterTable()">
                     <option value="">All Statuses</option>
-                    <option value="Active">Active</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Pending">Pending</option>
                 </select>
             </div>
 
@@ -541,7 +513,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Company Modal -->
     <div id="companyModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -562,9 +534,6 @@
                             <label for="program">Program *</label>
                             <select id="program" required>
                                 <option value="">Select Program</option>
-                                <option value="SIG">SIG Program</option>
-                                <option value="CEO Roundtable">CEO Roundtable</option>
-                                <option value="Other">Other</option>
                             </select>
                         </div>
 
@@ -572,8 +541,6 @@
                             <label for="status">Status *</label>
                             <select id="status" required>
                                 <option value="Pending">Pending</option>
-                                <option value="Active">Active</option>
-                                <option value="Completed">Completed</option>
                             </select>
                         </div>
                     </div>
@@ -651,72 +618,55 @@
                 <button class="close-btn" onclick="closeAdminModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="admin-panel">
-                    <h3>⚙️ System Settings</h3>
-                    
-                    <div class="admin-section">
-                        <h4>Program Types</h4>
-                        <div class="tag-list" id="programTypesList"></div>
-                        <div class="add-item-form">
-                            <input type="text" id="newProgramType" placeholder="Add new program type...">
-                            <button onclick="addProgramType()">Add</button>
-                        </div>
+                <div class="admin-section">
+                    <h4>Program Types</h4>
+                    <div class="tag-list" id="programTypesList"></div>
+                    <div class="add-item-form">
+                        <input type="text" id="newProgramType" placeholder="Add new program type...">
+                        <button onclick="addProgramType()">Add</button>
                     </div>
+                </div>
 
-                    <div class="admin-section">
-                        <h4>Status Options</h4>
-                        <div class="tag-list" id="statusOptionsList"></div>
-                        <div class="add-item-form">
-                            <input type="text" id="newStatusOption" placeholder="Add new status...">
-                            <button onclick="addStatusOption()">Add</button>
-                        </div>
+                <div class="admin-section">
+                    <h4>Status Options</h4>
+                    <div class="tag-list" id="statusOptionsList"></div>
+                    <div class="add-item-form">
+                        <input type="text" id="newStatusOption" placeholder="Add new status...">
+                        <button onclick="addStatusOption()">Add</button>
                     </div>
+                </div>
 
-                    <div class="admin-section">
-                        <h4>Louisiana Parishes (Quick Add)</h4>
-                        <div class="tag-list" id="parishList"></div>
-                        <div class="add-item-form">
-                            <input type="text" id="newParish" placeholder="Add parish...">
-                            <button onclick="addParish()">Add</button>
-                        </div>
+                <div class="admin-section">
+                    <h4>Appearance Settings</h4>
+                    <div class="setting-row">
+                        <span class="setting-label">Organization Name</span>
+                        <input type="text" id="orgName" style="width: 300px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;">
                     </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Subtitle</span>
+                        <input type="text" id="subtitle" style="width: 300px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    </div>
+                </div>
 
-                    <div class="admin-section">
-                        <h4>Appearance Settings</h4>
-                        <div class="setting-row">
-                            <span class="setting-label">Organization Name</span>
-                            <input type="text" id="orgName" style="width: 300px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;" value="Louisiana Growth Network">
-                        </div>
-                        <div class="setting-row">
-                            <span class="setting-label">Subtitle</span>
-                            <input type="text" id="subtitle" style="width: 300px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 6px;" value="Second-Stage Program Tracker">
-                        </div>
-                        <div class="setting-row">
-                            <span class="setting-label">Primary Color</span>
-                            <input type="color" id="primaryColor" class="color-input" value="#3b82f6">
-                        </div>
+                <div class="admin-section">
+                    <h4>Data Management</h4>
+                    <div class="setting-row">
+                        <span class="setting-label">Total Companies</span>
+                        <span id="adminTotalCompanies" style="font-weight: 600;">0</span>
                     </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Export Data Backup</span>
+                        <button class="btn btn-secondary btn-small" onclick="exportBackup()">Download Backup</button>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Import Data Backup</span>
+                        <input type="file" id="importBackup" accept=".json" onchange="importBackup(event)" style="font-size: 14px;">
+                    </div>
+                </div>
 
-                    <div class="admin-section">
-                        <h4>Data Management</h4>
-                        <div class="setting-row">
-                            <span class="setting-label">Total Companies</span>
-                            <span id="adminTotalCompanies" style="font-weight: 600;">0</span>
-                        </div>
-                        <div class="setting-row">
-                            <span class="setting-label">Export Data Backup</span>
-                            <button class="btn btn-secondary btn-small" onclick="exportBackup()">Download Backup JSON</button>
-                        </div>
-                        <div class="setting-row">
-                            <span class="setting-label">Import Data Backup</span>
-                            <input type="file" id="importBackup" accept=".json" onchange="importBackup(event)" style="font-size: 14px;">
-                        </div>
-                    </div>
-
-                    <div class="controls">
-                        <button class="btn btn-primary" onclick="saveAdminSettings()">Save Settings</button>
-                        <button class="btn btn-secondary" onclick="resetToDefaults()">Reset to Defaults</button>
-                    </div>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="saveAdminSettings()">Save Settings</button>
+                    <button class="btn btn-secondary" onclick="resetToDefaults()">Reset to Defaults</button>
                 </div>
             </div>
         </div>
@@ -730,10 +680,8 @@
         let adminSettings = JSON.parse(localStorage.getItem('lgnAdminSettings')) || {
             programTypes: ['SIG', 'CEO Roundtable', 'Other'],
             statusOptions: ['Pending', 'Active', 'Completed'],
-            parishes: ['East Baton Rouge', 'Orleans', 'Jefferson', 'Caddo', 'Lafayette'],
             orgName: 'Louisiana Growth Network',
-            subtitle: 'Second-Stage Program Tracker',
-            primaryColor: '#3b82f6'
+            subtitle: 'Second-Stage Program Tracker'
         };
 
         let companies = JSON.parse(localStorage.getItem('lgnCompanies')) || [];
@@ -968,46 +916,30 @@
         }
 
         function renderAdminSettings() {
-            // Update header
-            document.querySelector('.header h1').textContent = adminSettings.orgName;
-            document.querySelector('.header p').textContent = adminSettings.subtitle;
+            document.getElementById('headerTitle').textContent = adminSettings.orgName;
+            document.getElementById('headerSubtitle').textContent = adminSettings.subtitle;
             
-            // Update form fields
             document.getElementById('orgName').value = adminSettings.orgName;
             document.getElementById('subtitle').value = adminSettings.subtitle;
-            document.getElementById('primaryColor').value = adminSettings.primaryColor;
             
-            // Render program types
             const programList = document.getElementById('programTypesList');
             programList.innerHTML = adminSettings.programTypes.map((type, index) => `
                 <div class="tag">
                     ${type}
-                    ${index > 0 ? `<button onclick="removeProgramType(${index})">×</button>` : ''}
+                    <button onclick="removeProgramType(${index})">×</button>
                 </div>
             `).join('');
             
-            // Render status options
             const statusList = document.getElementById('statusOptionsList');
             statusList.innerHTML = adminSettings.statusOptions.map((status, index) => `
                 <div class="tag">
                     ${status}
-                    ${index > 0 ? `<button onclick="removeStatusOption(${index})">×</button>` : ''}
+                    <button onclick="removeStatusOption(${index})">×</button>
                 </div>
             `).join('');
             
-            // Render parishes
-            const parishList = document.getElementById('parishList');
-            parishList.innerHTML = adminSettings.parishes.map((parish, index) => `
-                <div class="tag">
-                    ${parish}
-                    <button onclick="removeParish(${index})">×</button>
-                </div>
-            `).join('');
-            
-            // Update stats
             document.getElementById('adminTotalCompanies').textContent = companies.length;
             
-            // Update dropdowns in the main form
             updateFormDropdowns();
         }
 
@@ -1017,14 +949,12 @@
             const statusSelect = document.getElementById('status');
             const statusFilter = document.getElementById('statusFilter');
             
-            // Update program dropdowns
             programSelect.innerHTML = '<option value="">Select Program</option>' + 
                 adminSettings.programTypes.map(type => `<option value="${type}">${type}</option>`).join('');
             
             programFilter.innerHTML = '<option value="">All Programs</option>' + 
                 adminSettings.programTypes.map(type => `<option value="${type}">${type}</option>`).join('');
             
-            // Update status dropdowns
             statusSelect.innerHTML = adminSettings.statusOptions.map(status => 
                 `<option value="${status}">${status}</option>`).join('');
             
@@ -1043,7 +973,7 @@
         }
 
         function removeProgramType(index) {
-            if (confirm('Remove this program type? Companies with this type will keep their data.')) {
+            if (confirm('Remove this program type?')) {
                 adminSettings.programTypes.splice(index, 1);
                 renderAdminSettings();
             }
@@ -1060,36 +990,17 @@
         }
 
         function removeStatusOption(index) {
-            if (confirm('Remove this status option? Companies with this status will keep their data.')) {
+            if (confirm('Remove this status option?')) {
                 adminSettings.statusOptions.splice(index, 1);
                 renderAdminSettings();
             }
         }
 
-        function addParish() {
-            const input = document.getElementById('newParish');
-            const value = input.value.trim();
-            if (value && !adminSettings.parishes.includes(value)) {
-                adminSettings.parishes.push(value);
-                input.value = '';
-                renderAdminSettings();
-            }
-        }
-
-        function removeParish(index) {
-            adminSettings.parishes.splice(index, 1);
-            renderAdminSettings();
-        }
-
         function saveAdminSettings() {
             adminSettings.orgName = document.getElementById('orgName').value;
             adminSettings.subtitle = document.getElementById('subtitle').value;
-            adminSettings.primaryColor = document.getElementById('primaryColor').value;
             
             localStorage.setItem('lgnAdminSettings', JSON.stringify(adminSettings));
-            
-            // Apply color change
-            document.documentElement.style.setProperty('--primary-color', adminSettings.primaryColor);
             
             renderAdminSettings();
             alert('Settings saved successfully!');
@@ -1100,10 +1011,8 @@
                 adminSettings = {
                     programTypes: ['SIG', 'CEO Roundtable', 'Other'],
                     statusOptions: ['Pending', 'Active', 'Completed'],
-                    parishes: ['East Baton Rouge', 'Orleans', 'Jefferson', 'Caddo', 'Lafayette'],
                     orgName: 'Louisiana Growth Network',
-                    subtitle: 'Second-Stage Program Tracker',
-                    primaryColor: '#3b82f6'
+                    subtitle: 'Second-Stage Program Tracker'
                 };
                 localStorage.setItem('lgnAdminSettings', JSON.stringify(adminSettings));
                 renderAdminSettings();
@@ -1119,15 +1028,7 @@
             };
             
             const dataStr = JSON.stringify(backup, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `lgn-backup-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            downloadFile(dataStr, `lgn-backup-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
         }
 
         function importBackup(event) {
